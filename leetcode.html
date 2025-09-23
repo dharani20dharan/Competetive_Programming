@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LeetCode Practice Checklist</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#60a5fa;--ok:#34d399}
+    *{box-sizing:border-box}
+    body{font-family:Inter,ui-sans-serif,system-ui,Helvetica,Arial;margin:0;background:linear-gradient(180deg,#081126 0%,#071022 100%);color:#e6eef6}
+    header{padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;gap:16px;align-items:center}
+    h1{margin:0;font-size:20px}
+    .container{max-width:1100px;margin:20px auto;padding:16px}
+    .controls{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+    .search{flex:1;min-width:200px}
+    input[type=text],select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
+    button{background:var(--accent);border:none;color:#04204e;padding:8px 12px;border-radius:8px;cursor:pointer}
+    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    section.card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+    .section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .meta{font-size:13px;color:var(--muted)}
+    ul.checklist{list-style:none;padding:0;margin:0;max-height:420px;overflow:auto}
+    li.item{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px}
+    li.item:hover{background:rgba(255,255,255,0.01)}
+    label.item-label{flex:1;display:flex;gap:8px;align-items:center}
+    .tag{font-size:12px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,0.03);color:var(--muted)}
+    .diff-e{color:var(--ok);border:1px solid rgba(52,211,153,0.08);background:rgba(52,211,153,0.06)}
+    .diff-m{color:#f59e0b;border:1px solid rgba(245,158,11,0.08);background:rgba(245,158,11,0.04)}
+    .diff-h{color:#fb7185;border:1px solid rgba(251,113,133,0.08);background:rgba(251,113,133,0.04)}
+    .counts{display:flex;gap:8px;align-items:center}
+    small.muted{color:var(--muted)}
+    .actions{display:flex;gap:8px}
+    footer{padding:12px;text-align:center;color:var(--muted);font-size:13px}
+    /* Print friendly */
+    @media print{body{background:white;color:black} header, .controls, button{display:none} .grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>LeetCode Practice Checklist</h1>
+    <div class="meta">Interactive checklist — progress saved locally</div>
+  </header>
+
+  <div class="container">
+    <div class="controls">
+      <input id="search" class="search" type="text" placeholder="Search problems or filter by keyword (e.g., 'Tree', 'Two Sum')" />
+      <select id="filterDifficulty">
+        <option value="all">All difficulties</option>
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+      <select id="filterTopic">
+        <option value="all">All topics</option>
+      </select>
+      <button id="expandAll" class="ghost">Expand All</button>
+      <button id="collapseAll" class="ghost">Collapse All</button>
+      <button id="reset" class="ghost">Reset All</button>
+      <button id="print" class="ghost">Print</button>
+    </div>
+
+    <div class="counts" style="margin-bottom:12px;gap:16px">
+      <div><strong id="totalCount">0</strong> total</div>
+      <div><strong id="doneCount">0</strong> done</div>
+      <div><strong id="progressPct">0%</strong> progress</div>
+    </div>
+
+    <div class="grid" id="sectionsContainer">
+      <!-- Sections injected by script -->
+    </div>
+
+    <footer>
+      Tip: click a problem to mark complete. Use search & difficulty filters. Data is stored in your browser (localStorage).
+    </footer>
+  </div>
+
+  <script>
+    // Data structure: topics -> [ {title, difficulty} ... ]
+    const DATA = {
+      "Arrays (and basic sorting/search)": {
+        Easy: [
+          "Two Sum","Remove Duplicates from Sorted Array","Best Time to Buy and Sell Stock I","Move Zeroes","Plus One","Contains Duplicate","Majority Element"
+        ],
+        Medium: [
+          "3Sum","3Sum Closest","Product of Array Except Self","Search in Rotated Sorted Array","Merge Intervals","Find First and Last Position of Element in Sorted Array","Sort Colors","Subarray Sum Equals K","Longest Consecutive Sequence","Kth Largest Element in an Array"
+        ],
+        Hard: ["Median of Two Sorted Arrays","Trapping Rain Water","Sliding Window Maximum"]
+      },
+      "Strings":{
+        Easy:["Reverse String","Valid Anagram","Valid Palindrome","Implement strStr() (needle in haystack)","Longest Common Prefix","First Unique Character in a String","Count and Say"],
+        Medium:["Longest Substring Without Repeating Characters","Group Anagrams","Longest Palindromic Substring","Find All Anagrams in a String","Word Break","String to Integer (atoi)","Decode Ways","Palindromic Substrings","Longest Common Subsequence","Reorganize String"],
+        Hard:["Minimum Window Substring","Edit Distance (Levenshtein)","Regular Expression Matching"]
+      },
+      "Linked Lists":{
+        Easy:["Reverse Linked List","Merge Two Sorted Lists","Linked List Cycle (detect)","Remove Linked List Elements","Middle of the Linked List","Intersection of Two Linked Lists","Convert Binary Number in a Linked List to Integer"],
+        Medium:["Add Two Numbers","Remove Nth Node From End of List","Reorder List","Copy List with Random Pointer","Odd Even Linked List","Sort List","Flatten a Multilevel Doubly Linked List","Linked List Cycle II (find entry)","Split Linked List in Parts","Design Linked List (implement basic operations)"],
+        Hard:["Merge k Sorted Lists","Reverse Nodes in k-Group","LRU Cache (design — uses linked list + hashmap)"]
+      },
+      "Stacks & Queues":{
+        Easy:["Valid Parentheses","Min Stack","Implement Queue using Stacks","Implement Stack using Queues","Next Greater Element I","Design Circular Queue","Evaluate Reverse Polish Notation (basic)"],
+        Medium:["Daily Temperatures","Next Greater Element II","Largest Rectangle in Histogram","Simplify Path","Basic Calculator II","Sliding Window Maximum","Design Circular Deque","Asteroid Collision","Basic Calculator","Online Stock Span"],
+        Hard:["Largest Rectangle in Histogram — optimized / stack proofs","Sliding Window Maximum — rigorous deque implementation","Shortest Subarray with Sum at Least K (advanced deque technique)"]
+      },
+      "Trees (binary trees & BST)":{
+        Easy:["Maximum Depth of Binary Tree","Same Tree","Symmetric Tree","Invert Binary Tree","Binary Tree Level Order Traversal","Path Sum","Merge Two Binary Trees"],
+        Medium:["Binary Tree Zigzag Level Order Traversal","Serialize and Deserialize Binary Tree (design)","Binary Tree Right Side View","Lowest Common Ancestor of a Binary Tree","Validate Binary Search Tree","Convert Sorted Array to Binary Search Tree","Kth Smallest Element in a BST","Path Sum II","Construct Binary Tree from Preorder and Inorder Traversal","Populating Next Right Pointers in Each Node"],
+        Hard:["Binary Tree Maximum Path Sum","Recover Binary Search Tree","Serialize and Deserialize BST (efficient)"]
+      },
+      "Heaps / Priority Queues":{
+        Easy:["Kth Largest Element in an Array (min-heap approach)","Top K Frequent Elements (heap approach)","Merge Two Sorted Arrays","Merge k Sorted Lists","Find Median from Data Stream (design)","K Closest Points to Origin","Meeting Rooms"],
+        Medium:["Merge k Sorted Lists (heap implementation)","Sliding Window Median (heap pairs)","Top K Frequent Words","Task Scheduler","Kth Smallest Number in Multiplication Table","Find K Pairs with Smallest Sums","Reorganize String","Super Ugly Number","Smallest Range Covering Elements from K Lists","Minimum Cost to Connect Sticks"],
+        Hard:["Sliding Window Median (robust)","Merge k Sorted Lists — optimal variants","Dynamic median streaming at scale (design)"]
+      },
+      "Hash table / sets / maps":{
+        Easy:["Two Sum (hashmap)","Valid Anagram","Ransom Note","Happy Number","Intersection of Two Arrays II","First Unique Character in a String","Contains Duplicate / Contains Duplicate II"],
+        Medium:["Group Anagrams","Subarray Sum Equals K","Top K Frequent Elements","Design HashMap (implement)","Longest Consecutive Sequence","Minimum Index Sum of Two Lists","Repeated DNA Sequences","Longest Harmonious Subsequence","Logger Rate Limiter (design)","Two Sum II — input array sorted"],
+        Hard:["Substring with Concatenation of All Words","Distinct Subsequences","Hard rolling hash / string hashing problems"]
+      },
+      "Two-Pointers & Sliding Window":{
+        Easy:["Two Sum II - Input array is sorted","Remove Duplicates from Sorted Array","Reverse Vowels of a String","Intersection of Two Arrays II","Valid Palindrome","Reverse String","Move Zeroes"],
+        Medium:["3Sum","3Sum Closest","Container With Most Water","Subarray Sum Equals K","Longest Substring Without Repeating Characters","Longest Repeating Character Replacement","Minimum Size Subarray Sum","Find All Anagrams in a String","Permutation in String","Fruit Into Baskets"],
+        Hard:["Sliding Window Maximum","Shortest Subarray with Sum at Least K","Advanced windowing mixed with data structure problems"]
+      },
+      "Recursion & Backtracking":{
+        Easy:["Subsets","Permutations","Combination Sum","Generate Parentheses","Letter Combinations of a Phone Number","Power of Two","Simple tree recursion: Preorder/Inorder/Postorder recursive traversals"],
+        Medium:["Combination Sum II","Permutations II","Word Search","N-Queens","Restore IP Addresses","Gray Code","Palindrome Partitioning","Subsets II","Expression Add Operators","Decode Ways II-ish"],
+        Hard:["Word Search II","Sudoku Solver","Hard variants of N-Queens"]
+      },
+      "Dynamic Programming (DP)":{
+        Easy:["Climbing Stairs","House Robber","Maximum Subarray","Best Time to Buy and Sell Stock","Coin Change","Jump Game","Unique Paths"],
+        Medium:["Longest Increasing Subsequence","Coin Change (min coins)","Decode Ways","Word Break","House Robber II","Partition Equal Subset Sum","Target Sum","Minimum Path Sum","Edit Distance","Palindromic Partitioning"],
+        Hard:["Regular Expression Matching","Interleaving String","Hard variations of segmented DP / digit DP"]
+      },
+      "Graphs":{
+        Easy:["Number of Islands","Flood Fill","Clone Graph","Graph Valid Tree","Course Schedule","Find the Town Judge","Number of Connected Components in an Undirected Graph"],
+        Medium:["Course Schedule II","Word Ladder","Minimum Height Trees","Pacific Atlantic Water Flow","Evaluate Division","Network Delay Time","Cheapest Flights Within K Stops","Redundant Connection","Accounts Merge","Course Schedule III"],
+        Hard:["Word Ladder II","Alien Dictionary","Advanced shortest-path / minimum-cut style problems"]
+      },
+      "Tries / Union-Find / Bit-tricks / Matrix":{
+        Easy:["Implement Trie (Prefix Tree)","Add and Search Word","Single Number","Number of 1 Bits","Rotate Image","Set Matrix Zeroes","Spiral Matrix"],
+        Medium:["Word Search II","Top K Frequent Words","Accounts Merge","Redundant Connection II","Bitwise AND of Numbers Range","Count Primes","Game of Life","Word Squares","Number of Islands II","Kth Smallest Element in a Sorted Matrix"],
+        Hard:["Advanced union-find design problems","Word Search II (at scale optimizations)","Hard matrix + bitmask DP combos"]
+      }
+    };
+
+    // Utilities and persistence
+    const STORAGE_KEY = 'leetcode_checklist_v1';
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+    // Build UI
+    const sectionsContainer = document.getElementById('sectionsContainer');
+    const filterTopic = document.getElementById('filterTopic');
+    const searchInput = document.getElementById('search');
+    const filterDifficulty = document.getElementById('filterDifficulty');
+
+    function buildTopicOptions(){
+      Object.keys(DATA).forEach(k=>{
+        const opt = document.createElement('option'); opt.value = k; opt.textContent = k; filterTopic.appendChild(opt);
+      })
+    }
+    buildTopicOptions();
+
+    function makeId(topic, title){
+      return btoa(topic + '||' + title).replace(/=/g,'');
+    }
+
+    function render(){
+      sectionsContainer.innerHTML = '';
+      const selectedTopic = filterTopic.value;
+      const difficultyFilter = filterDifficulty.value;
+      const q = searchInput.value.trim().toLowerCase();
+
+      let total = 0, done = 0;
+
+      Object.entries(DATA).forEach(([topic, groups])=>{
+        if(selectedTopic !== 'all' && selectedTopic !== topic) return;
+        const card = document.createElement('section'); card.className='card';
+        const head = document.createElement('div'); head.className='section-head';
+        const title = document.createElement('div'); title.innerHTML = `<strong>${topic}</strong><div class='meta'>${Object.values(groups).reduce((a,b)=>a+b.length,0)} problems</div>`;
+        const actions = document.createElement('div'); actions.className='actions';
+
+        const expandBtn = document.createElement('button'); expandBtn.className='ghost'; expandBtn.textContent = 'Expand';
+        const collapseBtn = document.createElement('button'); collapseBtn.className='ghost'; collapseBtn.textContent = 'Collapse';
+        const selectAllBtn = document.createElement('button'); selectAllBtn.className='ghost'; selectAllBtn.textContent='Mark all done';
+        const clearBtn = document.createElement('button'); clearBtn.className='ghost'; clearBtn.textContent='Clear';
+
+        actions.append(expandBtn, collapseBtn, selectAllBtn, clearBtn);
+        head.append(title, actions);
+        card.appendChild(head);
+
+        const list = document.createElement('ul'); list.className='checklist';
+
+        ['Easy','Medium','Hard'].forEach(diff=>{
+          if(!groups[diff] || (difficultyFilter!=='all' && difficultyFilter.toLowerCase()!==diff.toLowerCase())) return;
+          const headerLi = document.createElement('li'); headerLi.className='item';
+          headerLi.innerHTML = `<div style='min-width:140px'><span class='tag diff-${diff[0].toLowerCase()}'>${diff} (${groups[diff].length})</span></div>`;
+          list.appendChild(headerLi);
+
+          groups[diff].forEach(titleText=>{
+            const matchesSearch = q === '' || titleText.toLowerCase().includes(q) || topic.toLowerCase().includes(q);
+            if(!matchesSearch) return;
+            total++;
+            const id = makeId(topic, titleText);
+            const li = document.createElement('li'); li.className='item';
+            const checked = !!saved[id];
+            if(checked) done++;
+            li.innerHTML = `
+              <input type='checkbox' id='${id}' ${checked? 'checked': ''} />
+              <label class='item-label' for='${id}' title='${titleText}'>
+                <div style='min-width:10px'></div>
+                <div style='flex:1'><strong>${titleText}</strong><div class='meta'>${topic}</div></div>
+                <div class='tag diff-${diff[0].toLowerCase()}'>${diff}</div>
+              </label>
+            `;
+            list.appendChild(li);
+
+            const cb = li.querySelector('input');
+            cb.addEventListener('change', ()=>{
+              saved[id] = cb.checked;
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+              updateCounts();
+            });
+          });
+        });
+
+        card.appendChild(list);
+        sectionsContainer.appendChild(card);
+
+        // action handlers
+        expandBtn.addEventListener('click', ()=>{ list.style.maxHeight = '10000px'; });
+        collapseBtn.addEventListener('click', ()=>{ list.style.maxHeight = '220px'; });
+        selectAllBtn.addEventListener('click', ()=>{ list.querySelectorAll('input[type=checkbox]').forEach(cb=>{ cb.checked=true; saved[cb.id]=true; }); localStorage.setItem(STORAGE_KEY,JSON.stringify(saved)); updateCounts(); render(); });
+        clearBtn.addEventListener('click', ()=>{ list.querySelectorAll('input[type=checkbox]').forEach(cb=>{ cb.checked=false; delete saved[cb.id]; }); localStorage.setItem(STORAGE_KEY,JSON.stringify(saved)); updateCounts(); render(); });
+      });
+
+      document.getElementById('totalCount').textContent = total;
+      document.getElementById('doneCount').textContent = done;
+      document.getElementById('progressPct').textContent = total? Math.round(done/total*100) + '%':'0%';
+    }
+
+    function updateCounts(){
+      const total = document.querySelectorAll('.checklist input[type=checkbox]').length;
+      const done = document.querySelectorAll('.checklist input[type=checkbox]:checked').length;
+      document.getElementById('totalCount').textContent = total;
+      document.getElementById('doneCount').textContent = done;
+      document.getElementById('progressPct').textContent = total? Math.round(done/total*100) + '%':'0%';
+    }
+
+    // Controls
+    document.getElementById('expandAll').addEventListener('click', ()=>{
+      document.querySelectorAll('.checklist').forEach(l=> l.style.maxHeight='10000px');
+    });
+    document.getElementById('collapseAll').addEventListener('click', ()=>{
+      document.querySelectorAll('.checklist').forEach(l=> l.style.maxHeight='220px');
+    });
+    document.getElementById('reset').addEventListener('click', ()=>{
+      if(confirm('Clear all progress?')){ localStorage.removeItem(STORAGE_KEY); for(const k in saved) delete saved[k]; render(); }
+    });
+    document.getElementById('print').addEventListener('click', ()=>window.print());
+
+    filterTopic.addEventListener('change', render);
+    filterDifficulty.addEventListener('change', render);
+    searchInput.addEventListener('input', ()=>{ render(); });
+
+    // initialize collapsed heights
+    (function setDefaultHeights(){ /* noop - handled by css max-height via overflow */ })();
+
+    // initial render
+    render();
+
+  </script>
+</body>
+</html>
