@@ -1,0 +1,23 @@
+# Leet Code 977: Squares of a Sorted Array
+class Solution(object):
+    def sortedSquares(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: List[int]
+        """
+        n = len(nums)
+        result = [0] * n
+        left, right = 0, n -1
+        pos = n -1
+
+        while left <= right:
+            if abs(nums[left]) > abs(nums[right]):
+                result[pos] = mums[left] * nums[left]
+                left += 1
+            else:
+                result[pos] = nums[right] * nums[right]
+                right -= 1
+            pos -= 1
+            
+        return result
+    
