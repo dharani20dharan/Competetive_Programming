@@ -12,7 +12,7 @@ class Solution(object):
 
         while left <= right:
             if abs(nums[left]) > abs(nums[right]):
-                result[pos] = mums[left] * nums[left]
+                result[pos] = nums[left] * nums[left]
                 left += 1
             else:
                 result[pos] = nums[right] * nums[right]
