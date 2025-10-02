@@ -1,0 +1,35 @@
+# Leet Code 142: Linked List Cycle II
+
+# Definition for singly-linked list.
+# class ListNode(object):
+#     def __init__(self, x):
+#         self.val = x
+#         self.next = None
+
+class Solution(object):
+    def detectCycle(self, head):
+        """
+        :type head: ListNode
+        :rtype: ListNode
+        """
+        if not head or not head.next:
+            return None
+
+        slow, fast = head, head
+
+        # Step 1: Detect if there is a cycle
+        while fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+            if slow == fast:  # cycle detected
+                break
+        else:
+            return None  # no cycle found
+
+        # Step 2: Find the start of the cycle
+        slow = head
+        while slow != fast:
+            slow = slow.next
+            fast = fast.next
+
+        return slow  # node where the cycle begins
